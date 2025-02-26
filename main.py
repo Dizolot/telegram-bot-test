@@ -1,53 +1,45 @@
 import os
 import logging
 from time import sleep
-from dotenv import load_dotenv
 from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
-# Загрузка переменных окружения
-load_dotenv()
-
-# Настройка логгера
+# Настройка логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Функция для отправки сообщения администратору
-def send_message_to_admin(bot: Bot, admin_chat_id: int, text: str):
-    try:
-        bot.send_message(chat_id=admin_chat_id, text=text)
-        logger.info(f"Message sent to admin: {text}")
-    except Exception as e:
-        logger.error(f"Error sending message to admin: {e}")
+# Получение переменных окружения
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
 
-# Функция обработки команды /start
+# Функция для отправки сообщений администратору
+def send_message(bot, chat_id, text):
+    try:
+        bot.send_message(chat_id=chat_id, text=text)
+        logger.info(f"Message sent to {chat_id}: {text}")
+    except Exception as e:
+        logger.error(f"Error sending message to {chat_id}: {e}")
+
+# Функция для обработки команды /start
 def start(update: Update, context: CallbackContext):
     update.message.reply_text('Привет')
 
 def main():
-    # Проверка наличия переменных окружения
-    if 'TELEGRAM_BOT_TOKEN' not in os.environ or 'ADMIN_CHAT_ID' not in os.environ:
-        logger.error("Missing TELEGRAM_BOT_TOKEN or ADMIN_CHAT_ID in environment variables")
+    if not TOKEN or not ADMIN_CHAT_ID:
+        logger.error("Please provide TELEGRAM_BOT_TOKEN and ADMIN_CHAT_ID in environment variables.")
         return
 
-    # Инициализация бота
-    bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-    admin_chat_id = int(os.getenv('ADMIN_CHAT_ID'))
-    updater = Updater(token=bot_token, use_context=True)
+    updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
-    # Добавление обработчика команды /start
-    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler('start', start))
 
-    # Отправка сообщения администратору сразу после запуска
-    bot = updater.bot
-    send_message_to_admin(bot, admin_chat_id, 'Привет')
-
-    # Отправка второго сообщения через 2 секунды
+    bot = Bot(token=TOKEN)
+    
+    send_message(bot, ADMIN_CHAT_ID, 'Привет')
     sleep(2)
-    send_message_to_admin(bot, admin_chat_id, 'Пока')
+    send_message(bot, ADMIN_CHAT_ID, 'Пока')
 
-    # Запуск бота
     updater.start_polling()
     updater.idle()
 
