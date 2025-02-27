@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 # Загрузка переменных окружения
 load_dotenv()
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 ADMIN_CHAT_ID = os.getenv("ADMIN_CHAT_ID")
 
-if not TELEGRAM_TOKEN:
-    logger.error("Ошибка: TELEGRAM_TOKEN не найден в переменных окружения.")
+if not TELEGRAM_BOT_TOKEN:
+    logger.error("Ошибка: TELEGRAM_BOT_TOKEN не найден в переменных окружения.")
     exit(1)
 
 
@@ -55,7 +55,7 @@ async def main():
     logger.info("Начало выполнения функции main.")
     
     # Создаем экземпляр приложения
-    application = Application.builder().token(TELEGRAM_TOKEN).build()
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
     # Базовые команды
     application.add_handler(CommandHandler("start", start))

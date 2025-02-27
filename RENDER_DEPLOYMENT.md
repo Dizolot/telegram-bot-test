@@ -38,9 +38,9 @@ git push -u origin main
    - **Branch**: `main`
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `python telegram_bot.py`
+   - **Start Command**: `python main.py`
 5. В разделе "Environment Variables" добавьте:
-   - `TELEGRAM_TOKEN`: ваш токен Telegram бота
+   - `TELEGRAM_BOT_TOKEN`: ваш токен Telegram бота
    - `ADMIN_CHAT_ID`: ID вашего чата в Telegram
 6. Нажмите "Create Web Service"
 
