@@ -1,44 +1,49 @@
 import os
 import logging
-from time import sleep
+from threading import Timer
+from dotenv import load_dotenv
 from telegram import Bot, Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
+
+# Загрузка переменных окружения
+load_dotenv()
 
 # Настройка логирования
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Получение переменных окружения
+# Получение токена бота из переменных окружения
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+
+# Идентификатор администратора
 ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
 
-# Функция для отправки сообщений администратору
+# Функция для отправки сообщения администратору
 def send_message(bot, chat_id, text):
     try:
         bot.send_message(chat_id=chat_id, text=text)
-        logger.info(f"Message sent to {chat_id}: {text}")
+        logger.info(f'Сообщение "{text}" успешно отправлено администратору')
     except Exception as e:
-        logger.error(f"Error sending message to {chat_id}: {e}")
+        logger.error(f'Ошибка при отправке сообщения: {e}')
 
-# Функция для обработки команды /start
-def start(update: Update, context: CallbackContext):
+# Функция для автоматической отправки сообщений администратору
+def send_initial_messages():
+    bot = Bot(token=TOKEN)
+    send_message(bot, ADMIN_CHAT_ID, 'Привет')
+    Timer(2, send_message, (bot, ADMIN_CHAT_ID, 'Пока')).start()
+
+# Обработчик команды /start
+def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Привет')
 
 def main():
-    if not TOKEN or not ADMIN_CHAT_ID:
-        logger.error("Please provide TELEGRAM_BOT_TOKEN and ADMIN_CHAT_ID in environment variables.")
-        return
+    updater = Updater(TOKEN)
+    dp = updater.dispatcher
 
-    updater = Updater(token=TOKEN, use_context=True)
-    dispatcher = updater.dispatcher
+    dp.add_handler(CommandHandler("start", start))
 
-    dispatcher.add_handler(CommandHandler('start', start))
-
-    bot = Bot(token=TOKEN)
-    
-    send_message(bot, ADMIN_CHAT_ID, 'Привет')
-    sleep(2)
-    send_message(bot, ADMIN_CHAT_ID, 'Пока')
+    # Запуск функции автоматической отправки сообщений администратору
+    send_initial_messages()
 
     updater.start_polling()
     updater.idle()
