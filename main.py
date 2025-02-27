@@ -1,34 +1,37 @@
-import asyncio
-import logging
-from dotenv import load_dotenv
 import os
-from telegram import Update
+import asyncio
+from dotenv import load_dotenv
 from telegram.ext import Application, CommandHandler
-from python_telegram_bot_utils import post_init, send_message
+from telegram import Bot
+from telegram.error import TelegramError
 
-# Загрузка переменных окружения
 load_dotenv()
 
-# Инициализация логгера
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger()
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+ADMIN_CHAT_ID = int(os.getenv('ADMIN_CHAT_ID'))
+
+async def post_init(application):
+    """Функция, вызываемая после инициализации бота"""
+    await send_message(application.bot, 'Привет')
+    await asyncio.sleep(2)  # Задержка 2 секунды
+    await send_message(application.bot, 'Пока')
+
+async def send_message(bot: Bot, text: str):
+    try:
+        await bot.send_message(ADMIN_CHAT_ID, text)
+        print(f'Сообщение "{text}" успешно отправлено администратору.')
+    except TelegramError as e:
+        print(f'Ошибка при отправке сообщения: {e}')
 
 async def start(update, context):
-    """Обработчик команды /start"""
-    await update.message.reply_text('Тест пройден')
+    update.message.reply_text('Тест пройден')
 
 async def main():
-    # Создаем приложение
-    TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-    ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
-    application = Application.builder().token(TELEGRAM_TOKEN).post_init(post_init).build()
-
-    # Добавляем обработчики команд
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(post_init).build()
+    
     application.add_handler(CommandHandler("start", start))
-
-    # Запускаем бота (включает initialize и start внутри)
+    
     await application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == '__main__':
-    # Запускаем главную функцию
     asyncio.run(main())

@@ -4,7 +4,7 @@ from telegram import Bot
 async def post_init(application):
     """Функция, вызываемая после инициализации бота"""
     bot = application.bot
-    await send_message(bot, 'Привет', application.admin_chat_id)
+    await send_message(bot, 'Тест пройден', application.admin_chat_id)
     await asyncio.sleep(2)  # Задержка 2 секунды
     await send_message(bot, 'Пока', application.admin_chat_id)
 
