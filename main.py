@@ -1,51 +1,44 @@
 import os
 import logging
-from threading import Timer
 from dotenv import load_dotenv
-from telegram import Bot, Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram import Update
+from telegram.ext import CommandHandler, Updater
 
-# Загрузка переменных окружения
 load_dotenv()
 
-# Настройка логирования
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Получение токена бота из переменных окружения
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-
-# Идентификатор администратора
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
 
-# Функция для отправки сообщения администратору
-def send_message(bot, chat_id, text):
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    filename='bot.log'
+)
+
+def start(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text='Привет')
+
+def send_message(bot, text):
     try:
-        bot.send_message(chat_id=chat_id, text=text)
-        logger.info(f'Сообщение "{text}" успешно отправлено администратору')
+        bot.send_message(chat_id=ADMIN_CHAT_ID, text=text)
+        logging.info(f'Сообщение "{text}" отправлено администратору')
     except Exception as e:
-        logger.error(f'Ошибка при отправке сообщения: {e}')
+        logging.error(f'Ошибка при отправке сообщения: {e}')
 
-# Функция для автоматической отправки сообщений администратору
-def send_initial_messages():
-    bot = Bot(token=TOKEN)
-    send_message(bot, ADMIN_CHAT_ID, 'Привет')
-    Timer(2, send_message, (bot, ADMIN_CHAT_ID, 'Пока')).start()
-
-# Обработчик команды /start
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Привет')
+def send_initial_messages(bot):
+    send_message(bot, 'Привет')
+    send_message(bot, 'Пока')
 
 def main():
-    updater = Updater(TOKEN)
-    dp = updater.dispatcher
+    updater = Updater(token=TELEGRAM_TOKEN)
+    dispatcher = updater.dispatcher
 
-    dp.add_handler(CommandHandler("start", start))
-
-    # Запуск функции автоматической отправки сообщений администратору
-    send_initial_messages()
+    dispatcher.add_handler(CommandHandler("start", start))
 
     updater.start_polling()
+
+    send_initial_messages(updater.bot)
+
     updater.idle()
 
 if __name__ == '__main__':
