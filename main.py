@@ -16,9 +16,10 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_TOKEN')
 ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
+PORT = int(os.getenv('PORT', '8443'))
 
 if not TELEGRAM_BOT_TOKEN:
-    logger.error("Ошибка: TELEGRAM_BOT_TOKEN не найден в переменных окружения.")
+    logger.error("Ошибка: TELEGRAM_TOKEN не найден в переменных окружения.")
     exit(1)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -51,7 +52,7 @@ async def main():
     application.add_handler(CommandHandler("start", start))
     
     logger.info("Бот запускается...")
-    await application.run_polling(allowed_updates=Update.ALL_TYPES)
+    await application.run_polling(allowed_updates=Update.ALL_TYPES, port=PORT)
     logger.info("Бот остановлен.")
 
 if __name__ == '__main__':
