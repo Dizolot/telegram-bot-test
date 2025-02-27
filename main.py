@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_TOKEN')
 ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID')
 
 if not TELEGRAM_BOT_TOKEN:
